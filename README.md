@@ -144,6 +144,7 @@ GitHub Actions用于自动化测试、构建和部署流程：
 4. 推送镜像到Docker仓库
 5. 部署到生产环境
 
+// OATH2 github申请配置 https://github.com/settings/applications/new
 ## 许可证
 
 ISC

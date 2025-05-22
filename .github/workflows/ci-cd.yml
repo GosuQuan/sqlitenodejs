@@ -53,17 +53,88 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     steps:
-      - name: Deploy to production
-        run: echo "Deploy to production server would happen here"
-        # In a real scenario, you would use SSH or a deployment service like Heroku, AWS, etc.
-        # Example for SSH deployment:
-        # - name: Deploy via SSH
-        #   uses: appleboy/ssh-action@master
-        #   with:
-        #     host: ${{ secrets.SSH_HOST }}
-        #     username: ${{ secrets.SSH_USERNAME }}
-        #     key: ${{ secrets.SSH_PRIVATE_KEY }}
-        #     script: |
-        #       cd /path/to/deployment
-        #       docker-compose pull
-        #       docker-compose up -d
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
+          
+      - name: Setup known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
+          
+      - name: Deploy to Aliyun ECS
+        uses: appleboy/ssh-action@master
+        with:
+          host: "${{ secrets.ALIYUN_ECS_HOST }}"
+          username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
+          key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
+          script: |
+            # 创建应用目录（如果不存在）
+            mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
+            cd /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
+            
+            # 拉取最新的Docker镜像
+            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+            
+            # 创建或更新环境变量文件
+            cat > .env << 'EOL'
+            # 生产环境配置
+            NODE_ENV=production
+            PORT=8080
+            
+            # JWT配置
+            JWT_SECRET="${{ secrets.PROD_JWT_SECRET }}"
+            JWT_EXPIRES_IN=1d
+            
+            # 会话配置
+            SESSION_SECRET="${{ secrets.PROD_SESSION_SECRET }}"
+            
+            # 数据库配置
+            DB_PATH=./database.sqlite
+            
+            # GitHub OAuth配置
+            GITHUB_CLIENT_ID="${{ secrets.GITHUB_CLIENT_ID }}"
+            GITHUB_CLIENT_SECRET="${{ secrets.GITHUB_CLIENT_SECRET }}"
+            GITHUB_CALLBACK_URL=https://"${{ secrets.PROD_DOMAIN }}"/api/auth/github/callback
+            EOL
+            
+            # 创建或更新docker-compose.yml文件
+            cat > docker-compose.yml << 'EOL'
+            version: '3.8'
+            
+            services:
+              app:
+                image: "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+                container_name: enterprise-nodejs-service
+                restart: always
+                ports:
+                  - "8080:8080"
+                environment:
+                  - NODE_ENV=production
+                  - PORT=8080
+                volumes:
+                  - ./database.sqlite:/app/database.sqlite
+                  - ./logs:/app/logs
+                  - ./.env:/app/.env
+                healthcheck:
+                  test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+                  interval: 30s
+                  timeout: 10s
+                  retries: 3
+                  start_period: 10s
+            EOL
+            
+            # 停止并移除旧容器（如果存在）
+            docker-compose down || true
+            
+            # 启动新容器
+            docker-compose up -d
+            
+            # 清理未使用的Docker镜像
+            docker image prune -af
+            
+            # 检查应用状态
+            sleep 10
+            docker-compose ps
+            docker-compose logs --tail=50
