@@ -1,0 +1,69 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Run linting
+        run: npm run lint
+      - name: Run tests
+        run: npm test
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install dependencies
+        run: npm ci
+      - name: Build Docker image
+        run: docker build -t enterprise-nodejs-service .
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+          password: "${{ secrets.DOCKER_HUB_TOKEN }}"
+      - name: Push Docker image
+        run: |
+          docker tag enterprise-nodejs-service "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+          docker push "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    steps:
+      - name: Deploy to production
+        run: echo "Deploy to production server would happen here"
+        # In a real scenario, you would use SSH or a deployment service like Heroku, AWS, etc.
+        # Example for SSH deployment:
+        # - name: Deploy via SSH
+        #   uses: appleboy/ssh-action@master
+        #   with:
+        #     host: ${{ secrets.SSH_HOST }}
+        #     username: ${{ secrets.SSH_USERNAME }}
+        #     key: ${{ secrets.SSH_PRIVATE_KEY }}
+        #     script: |
+        #       cd /path/to/deployment
+        #       docker-compose pull
+        #       docker-compose up -d

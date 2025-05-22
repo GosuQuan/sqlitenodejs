@@ -1,0 +1,33 @@
+{
+  "server": {
+    "port": 3000
+  },
+  "jwt": {
+    "secret": "dev_jwt_secret_key_change_in_production",
+    "expiresIn": "1d"
+  },
+  "session": {
+    "secret": "dev_session_secret_key_change_in_production",
+    "resave": false,
+    "saveUninitialized": false,
+    "cookie": {
+      "secure": false,
+      "maxAge": 86400000
+    }
+  },
+  "database": {
+    "path": "./database.sqlite",
+    "logging": true
+  },
+  "auth": {
+    "github": {
+      "clientID": "your_github_client_id",
+      "clientSecret": "your_github_client_secret",
+      "callbackURL": "http://localhost:3000/api/auth/github/callback"
+    }
+  },
+  "logging": {
+    "level": "info",
+    "directory": "./logs"
+  }
+}
