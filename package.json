@@ -7,8 +7,10 @@
     "dev": "nodemon src/app.js",
     "test": "jest --coverage",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "prepare": "husky install"
   },
+  "packageManager": "pnpm@10.11.0",
   "keywords": [],
   "author": "",
   "license": "ISC",

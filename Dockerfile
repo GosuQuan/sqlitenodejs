@@ -4,9 +4,12 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
+# Install pnpm
+RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
+
 # Install dependencies
-COPY package*.json ./
-RUN npm ci --only=production
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --prod --frozen-lockfile
 
 # Copy application code
 COPY . .
