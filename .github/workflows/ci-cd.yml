@@ -152,15 +152,15 @@ jobs:
             EOL
             
             # 停止并移除旧容器（如果存在）
-            docker-compose down || true
+            docker compose down || true
             
             # 启动新容器
-            docker-compose up -d
+            docker compose up -d
             
             # 清理未使用的Docker镜像
             docker image prune -af
             
             # 检查应用状态
             sleep 10
-            docker-compose ps
-            docker-compose logs --tail=50
+            docker compose ps
+            docker compose logs --tail=50
