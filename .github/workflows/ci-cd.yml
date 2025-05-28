@@ -89,14 +89,23 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
-      - name: Deploy to ALIYUN ECS
-        uses: appleboy/ssh-action@v1
+      - name: Deploy to HUAWEIYUN ECS
+        uses: appleboy/ssh-action@master
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
-          port: "22"
           script: |
+            # 创建应用目录（如果不存在）
+            mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
+            cd /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
+            
+            systemctl restart docker || service docker restart
+            echo "Docker version: $(docker --version)"
+            
+            # 拉取最新的Docker镜像
+            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+            
             # 创建或更新环境变量文件
             cat > .env << EOF
             # 生产环境配置
@@ -149,6 +158,10 @@ jobs:
             # 启动新容器
             docker compose up -d
             
+            # 清理未使用的Docker镜像
+            docker image prune -af
+            
             # 检查应用状态
             sleep 10
             docker compose ps
+            docker compose logs --tail=50
