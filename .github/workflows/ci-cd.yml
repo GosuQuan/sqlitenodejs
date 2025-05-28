@@ -89,7 +89,7 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
-      - name: Deploy to Aliyun ECS
+      - name: Deploy to HUAWEIYUN ECS
         uses: appleboy/ssh-action@master
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
