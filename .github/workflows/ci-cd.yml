@@ -96,13 +96,6 @@ jobs:
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
           script: |
-            # 创建应用目录（如果不存在）
-            mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
-            cd /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
-            
-            systemctl restart docker || service docker restart
-            echo "Docker version: $(docker --version)"
-            
             # 拉取最新的Docker镜像
             docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
             
