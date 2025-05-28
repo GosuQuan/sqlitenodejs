@@ -90,11 +90,12 @@ jobs:
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
       - name: Deploy to HUAWEIYUN ECS
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
+          port: "22"
           script: |
             # 创建应用目录（如果不存在）
             mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
