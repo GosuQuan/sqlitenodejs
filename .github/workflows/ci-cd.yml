@@ -113,7 +113,7 @@ jobs:
             docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
             
             # 创建或更新环境变量文件
-            cat > .env << 'EOL'
+            cat > .env << EOF
             # 生产环境配置
             NODE_ENV=production
             PORT=8080
@@ -122,19 +122,15 @@ jobs:
             JWT_SECRET="${{ secrets.PROD_JWT_SECRET }}"
             JWT_EXPIRES_IN=1d
             
-
             # 会话配置
             SESSION_SECRET="${{ secrets.PROD_SESSION_SECRET }}"
             
             # 数据库配置
             DB_PATH=./database.sqlite
             
-            
-            # GitHub OAuth配置
-            GITHUB_CLIENT_ID="${{ secrets.GITHUB_CLIENT_ID }}"
-            GITHUB_CLIENT_SECRET="${{ secrets.GITHUB_CLIENT_SECRET }}"
-            GITHUB_CALLBACK_URL=https://"${{ secrets.PROD_DOMAIN }}"/api/auth/github/callback
-            EOL
+            # 注意: GitHub OAuth配置暂时移除
+            # 待配置完成后再添加
+            EOF
             
             # 创建或更新docker-compose.yml文件
             cat > docker-compose.yml << EOF
