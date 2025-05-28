@@ -90,11 +90,12 @@ jobs:
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
       - name: Deploy to ALIYUN ECS
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
+          port: "22"
           script: |
             # 创建或更新环境变量文件
             cat > .env << EOF
