@@ -89,16 +89,13 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
-      - name: Deploy to HUAWEIYUN ECS
+      - name: Deploy to ALIYUN ECS
         uses: appleboy/ssh-action@master
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
           script: |
-            # 拉取最新的Docker镜像
-            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
-            
             # 创建或更新环境变量文件
             cat > .env << EOF
             # 生产环境配置
@@ -151,10 +148,6 @@ jobs:
             # 启动新容器
             docker compose up -d
             
-            # 清理未使用的Docker镜像
-            docker image prune -af
-            
             # 检查应用状态
             sleep 10
             docker compose ps
-            docker compose logs --tail=50
