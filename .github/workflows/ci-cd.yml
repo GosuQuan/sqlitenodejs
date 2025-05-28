@@ -100,14 +100,8 @@ jobs:
             mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
             cd /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
             
-            # 配置Docker使用华为云镜像加速
-            mkdir -p /etc/docker
-            cat > /etc/docker/daemon.json << 'EOF'
-            {
-              "registry-mirrors": ["https://registry.huaweicloud.com", "https://mirror.baidubce.com"]
-            }
-            EOF
             systemctl restart docker || service docker restart
+            echo "Docker version: $(docker --version)"
             
             # 拉取最新的Docker镜像
             docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
