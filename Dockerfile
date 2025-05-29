@@ -3,13 +3,26 @@ FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
- 
+
+# 安装编译 SQLite3 所需的依赖
+RUN apk add --no-cache --virtual .build-deps \
+    python3 \
+    make \
+    g++ \
+    sqlite-dev
+
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
 
 # Install dependencies
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --prod --frozen-lockfile
+RUN pnpm install --frozen-lockfile
+
+# 重建 SQLite3
+RUN pnpm rebuild sqlite3
+
+# 删除编译依赖以减小镜像大小
+RUN apk del .build-deps && apk add --no-cache sqlite
 
 # Copy application code
 COPY . .
