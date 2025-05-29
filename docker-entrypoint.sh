@@ -5,6 +5,12 @@ set -e
 mkdir -p /app/logs
 mkdir -p /app/data
 
+# 检查并清理错误的database.sqlite目录
+if [ -d "/app/database.sqlite" ]; then
+  echo "Found database.sqlite directory instead of file, removing it..."
+  rm -rf /app/database.sqlite
+fi
+
 # 确保数据库文件存在并有正确权限
 echo "Creating or verifying database file..."
 touch /app/data/database.sqlite
