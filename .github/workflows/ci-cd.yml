@@ -112,7 +112,7 @@ jobs:
             echo "Docker version: $(docker --version)"
             
             # 拉取最新的Docker镜像
-            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
             
             # 创建或更新环境变量文件
             cat > .env << EOF
