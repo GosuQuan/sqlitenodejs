@@ -140,7 +140,7 @@ jobs:
             
             services:
               app:
-                image: "${{ secrets.DOCKER_HUB_USERNAME }}"/enterprise-nodejs-service:latest
+                image: "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
                 container_name: enterprise-nodejs-service
                 restart: always
                 ports:
