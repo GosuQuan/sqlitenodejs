@@ -63,7 +63,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
       - name: Build Docker image
-        run: docker build -t enterprise-nodejs-service .
+        run: docker build --no-cache -t enterprise-nodejs-service .
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -111,7 +111,13 @@ jobs:
             systemctl restart docker || service docker restart
             echo "Docker version: $(docker --version)"
             
-            # 拉取最新的Docker镜像
+            # 强制拉取最新的Docker镜像
+            docker pull --no-cache "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
+            
+            # 删除旧的镜像（如果存在）
+            docker rmi "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest" || true
+            
+            # 再次拉取最新镜像
             docker pull "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
             
             # 创建或更新环境变量文件
