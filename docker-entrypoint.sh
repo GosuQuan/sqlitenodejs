@@ -4,14 +4,20 @@ set -e
 # 创建日志目录
 mkdir -p /app/logs
 
-# 确保数据库目录存在并有正确权限
+# 确保数据库文件存在并有正确权限
+echo "Creating or verifying database file..."
 touch /app/database.sqlite
-chown -R appuser:appgroup /app /app/database.sqlite /app/logs
-chmod 755 /app
-chmod 644 /app/database.sqlite
+
+# 设置正确的权限
+echo "Setting correct permissions..."
+chmod -R 755 /app
+chmod 666 /app/database.sqlite
+chown -R appuser:appgroup /app /app/logs
+chown appuser:appgroup /app/database.sqlite
 
 # 显示文件权限和所有权信息以便调试
 echo "Database file permissions:"
+ls -la /app/
 ls -la /app/database.sqlite
 
 # 确保环境变量文件存在
