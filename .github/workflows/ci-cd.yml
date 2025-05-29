@@ -86,6 +86,10 @@ jobs:
           echo "GitHub Event Name: ${{ github.event_name }}"
           echo "Runner OS: ${{ runner.os }}"
           echo "=== End Debug Info ==="
+      
+      # 检出代码，用于上传到服务器
+      - uses: actions/checkout@v4
+      
       - name: Setup SSH key
         uses: webfactory/ssh-agent@v0.9.0
         with:
@@ -95,6 +99,17 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
+      
+      # 将源代码上传到服务器
+      - name: Copy source code to server
+        uses: appleboy/scp-action@master
+        with:
+          host: "${{ secrets.ALIYUN_ECS_HOST }}"
+          username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
+          key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
+          port: "22"
+          source: "./*"
+          target: "/home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service"
           
       - name: Deploy to HUAWEIYUN ECS
         uses: appleboy/ssh-action@v0.1.8
@@ -104,21 +119,15 @@ jobs:
           key: "${{ secrets.ALIYUN_SSH_PRIVATE_KEY }}"
           port: "22"
           script: |
-            # 创建应用目录（如果不存在）
-            mkdir -p /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
+            # 进入应用目录
             cd /home/${{ secrets.ALIYUN_ECS_USERNAME }}/enterprise-nodejs-service
             
+            # 重启 Docker 服务
             systemctl restart docker || service docker restart
             echo "Docker version: $(docker --version)"
             
-            # 强制拉取最新的Docker镜像
-            docker pull --no-cache "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
-            
-            # 删除旧的镜像（如果存在）
-            docker rmi "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest" || true
-            
-            # 再次拉取最新镜像
-            docker pull "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
+            # 在服务器上构建 Docker 镜像
+            docker build --no-cache -t "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest" .
             
             # 创建或更新环境变量文件
             cat > .env << EOF
