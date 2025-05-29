@@ -1,28 +1,29 @@
-# Use Node.js LTS version as base image
-FROM node:20-alpine
+# 使用完整版本的 Node.js 镜像，而不是 Alpine 版本
+FROM node:20
 
-# Set working directory
+# 设置工作目录
 WORKDIR /app
 
 # 安装编译 SQLite3 所需的依赖
-RUN apk add --no-cache --virtual .build-deps \
+RUN apt-get update && apt-get install -y \
     python3 \
     make \
     g++ \
-    sqlite-dev
+    libsqlite3-dev \
+    sqlite3
 
-# Install pnpm
+# 安装 pnpm
 RUN corepack enable && corepack prepare pnpm@10.11.0 --activate
 
-# Install dependencies
+# 复制 package.json 和 lock 文件
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
 
-# 重建 SQLite3
-RUN pnpm rebuild sqlite3
+# 安装依赖并重建 SQLite3
+RUN pnpm install --frozen-lockfile && \
+    pnpm rebuild sqlite3
 
-# 删除编译依赖以减小镜像大小
-RUN apk del .build-deps && apk add --no-cache sqlite
+# 清理不必要的包以减小镜像大小
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Copy application code
 COPY . .
