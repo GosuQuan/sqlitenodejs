@@ -143,7 +143,7 @@ jobs:
             SESSION_SECRET="${{ secrets.PROD_SESSION_SECRET }}"
             
             # 数据库配置
-            DB_PATH=./database.sqlite
+            DB_PATH=/app/data/database.sqlite
             
             # 注意: GitHub OAuth配置暂时移除
             # 待配置完成后再添加
@@ -151,8 +151,6 @@ jobs:
             
             # 创建或更新docker-compose.yml文件
             cat > docker-compose.yml << 'EOL'
-            version: '3.8'
-            
             services:
               app:
                 image: "${{ secrets.DOCKER_HUB_USERNAME }}/enterprise-nodejs-service:latest"
@@ -164,7 +162,7 @@ jobs:
                   - NODE_ENV=production
                   - PORT=8080
                 volumes:
-                  - ./database.sqlite:/app/database.sqlite
+                  - ./data:/app/data
                   - ./logs:/app/logs
                   - ./.env:/app/.env
                 healthcheck:
