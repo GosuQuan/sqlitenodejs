@@ -9,7 +9,9 @@ RUN apt-get update && apt-get install -y \
     python \
     make \
     g++ \
-    libsqlite3-dev
+    libsqlite3-dev \
+    wget \
+    gosu
 
 # 复制 package.json 和 package-lock.json
 COPY package*.json ./
@@ -29,7 +31,10 @@ COPY . .
 # Create a non-root user and switch to it
 RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 RUN chown -R appuser:appgroup /app
-USER appuser
+
+# Copy and make entrypoint script executable
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Expose port
 EXPOSE 8080
@@ -37,5 +42,6 @@ EXPOSE 8080
 # Set environment variables
 ENV NODE_ENV=production
 
-# Run the application
+# Use entrypoint script
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["node", "src/app.js"]
