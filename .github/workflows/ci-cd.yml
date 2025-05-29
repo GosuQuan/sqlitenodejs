@@ -90,7 +90,7 @@ jobs:
           ssh-keyscan -H "${{ secrets.ALIYUN_ECS_HOST }}" >> ~/.ssh/known_hosts
           
       - name: Deploy to HUAWEIYUN ECS
-        uses: appleboy/ssh-action@v1
+        uses: appleboy/ssh-action@v0.1.8
         with:
           host: "${{ secrets.ALIYUN_ECS_HOST }}"
           username: "${{ secrets.ALIYUN_ECS_USERNAME }}"
