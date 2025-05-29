@@ -29,7 +29,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 COPY . .
 
 # Create a non-root user and switch to it
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN groupadd -r appgroup && useradd -r -g appgroup appuser
 RUN chown -R appuser:appgroup /app
 USER appuser
 
